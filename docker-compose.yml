@@ -1,12 +1,25 @@
 services:
+  # Instala deps do monorepo uma vez (evita EEXIST com 3 bun install em paralelo).
+  deps:
+    image: oven/bun:latest
+    working_dir: /app
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    command: sh -c "bun install --frozen-lockfile"
+    restart: "no"
+
   register:
     image: oven/bun:latest
-    command: sh -c "cd /app && (bun install || true) && cd apps/register && bunx prisma generate && bun run dev"
+    command: sh -c "cd apps/register && bunx prisma generate && bun run dev"
     working_dir: /app/apps/register
     container_name: projeto-3-register
     volumes:
       - .:/app
-      - register_modules:/app/node_modules
+      - node_modules:/app/node_modules
+    depends_on:
+      deps:
+        condition: service_completed_successfully
     environment:
       NEON_DATABASE_URL: ${NEON_DATABASE_URL_REGISTER}
       PORT: 3000
@@ -20,23 +33,18 @@ services:
 
   auth:
     image: oven/bun:latest
-    command: sh -c "cd /app && (bun install || true) && cd apps/auth && bunx prisma generate && bun run dev"
+    command: sh -c "cd apps/auth && bunx prisma generate && bun run dev"
     working_dir: /app/apps/auth
     container_name: projeto-3-auth
     volumes:
       - .:/app
-      - auth_modules:/app/node_modules
-    environment:
-      DATABASE_URL: ${DATABASE_URL_AUTH}
-      DATABASE_URL_POOLED: ${DATABASE_URL_AUTH}
-      JWT_SECRET: ${JWT_SECRET}
-      REGISTER_SERVICE_URL: http://projeto-3-register:3000
-      PORT: 3001
-      CORS_ORIGIN: https://clinicasdigitais.cin.ufpe.br
-      NODE_ENV: development
+      - node_modules:/app/node_modules
     depends_on:
-      - register
-    ports:
+      deps:
+        condition: service_completed_successfully
+      register:
+        condition: service_started
+    environment:
       - "3011:3001"
     restart: on-failure
     networks:
@@ -45,11 +53,14 @@ services:
   historico:
     image: oven/bun:latest
     container_name: projeto-3-historico
-    command: sh -c "cd /app && (bun install || true) && cd apps/historico && bunx prisma generate && bun run dev"
+    command: sh -c "cd apps/historico && bunx prisma generate && bun run dev"
     working_dir: /app/apps/historico
     volumes:
       - .:/app
-      - historico_modules:/app/node_modules
+      - node_modules:/app/node_modules
+    depends_on:
+      deps:
+        condition: service_completed_successfully
     environment:
       NEON_DATABASE_URL_DEV: ${NEON_DATABASE_URL_HISTORICO}
       PORT: 3002
@@ -75,9 +86,7 @@ services:
 
 
 volumes:
-  register_modules:
-  auth_modules:
-  historico_modules:
+  node_modules:
 
 networks:
   cin_proxy:
