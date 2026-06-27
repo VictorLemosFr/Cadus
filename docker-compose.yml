@@ -53,7 +53,7 @@ services:
     environment:
       NEON_DATABASE_URL_DEV: ${NEON_DATABASE_URL_HISTORICO}
       PORT: 3002
-      CORS_ORIGIN: http://localhost
+      CORS_ORIGIN: https://clinicasdigitais.cin.ufpe.br
       NODE_ENV: development
     restart: on-failure
     ports:
@@ -63,7 +63,7 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: ./apps/frontend
     container_name: projeto-3-frontend
     volumes:
       - /opt/docker/frontends/projeto3:/output
