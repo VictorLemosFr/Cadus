@@ -3,22 +3,26 @@ services:
     image: oven/bun:latest
     command: sh -c "cd /app && (bun install || true) && cd apps/register && bunx prisma generate && bun run dev"
     working_dir: /app/apps/register
+    container_name: projeto-3-register
     volumes:
       - .:/app
       - register_modules:/app/node_modules
     environment:
       NEON_DATABASE_URL: ${NEON_DATABASE_URL_REGISTER}
       PORT: 3000
-      CORS_ORIGIN: http://localhost
+      CORS_ORIGIN: https://clinicasdigitais.cin.ufpe.br
       NODE_ENV: development
     restart: on-failure
+    ports:
+      - "3010:3000"
     networks:
-      - cadus
+      - cin_proxy
 
   auth:
     image: oven/bun:latest
     command: sh -c "cd /app && (bun install || true) && cd apps/auth && bunx prisma generate && bun run dev"
     working_dir: /app/apps/auth
+    container_name: projeto-3-auth
     volumes:
       - .:/app
       - auth_modules:/app/node_modules
@@ -26,18 +30,21 @@ services:
       DATABASE_URL: ${DATABASE_URL_AUTH}
       DATABASE_URL_POOLED: ${DATABASE_URL_AUTH}
       JWT_SECRET: ${JWT_SECRET}
-      REGISTER_SERVICE_URL: http://register:3000
+      REGISTER_SERVICE_URL: http://projeto-3-register:3000
       PORT: 3001
-      CORS_ORIGIN: http://localhost
+      CORS_ORIGIN: https://clinicasdigitais.cin.ufpe.br
       NODE_ENV: development
     depends_on:
       - register
+    ports:
+      - "3011:3001"
     restart: on-failure
     networks:
-      - cadus
+      - cin_proxy
 
   historico:
     image: oven/bun:latest
+    container_name: projeto-3-historico
     command: sh -c "cd /app && (bun install || true) && cd apps/historico && bunx prisma generate && bun run dev"
     working_dir: /app/apps/historico
     volumes:
@@ -49,42 +56,29 @@ services:
       CORS_ORIGIN: http://localhost
       NODE_ENV: development
     restart: on-failure
+    ports:
+      - "3012:3002"
     networks:
-      - cadus
+      - cin_proxy
 
   frontend:
-    image: oven/bun:latest
-    command: sh -c "cd /app && (bun install || true) && cd apps/frontend && bun run dev"
-    working_dir: /app/apps/frontend
+    build:
+      context: ./frontend
+    container_name: projeto-3-frontend
     volumes:
-      - .:/app
-      - frontend_modules:/app/node_modules
+      - /opt/docker/frontends/projeto3:/output
     environment:
-      NODE_ENV: development
-    restart: on-failure
+      NODE_ENV: production
     networks:
-      - cadus
+      - cin_proxy
+    restart: "no"
 
-  nginx:
-    build: ./nginx
-    container_name: cadus-nginx
-    ports:
-      - "80:80"
-    depends_on:
-      - frontend
-      - auth
-      - register
-      - historico
-    networks:
-      - cadus
-    restart: always
 
 volumes:
   register_modules:
   auth_modules:
   historico_modules:
-  frontend_modules:
 
 networks:
-  cadus:
-    driver: bridge
+  cin_proxy:
+    external: true
