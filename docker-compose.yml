@@ -11,7 +11,7 @@ services:
 
   register:
     image: oven/bun:latest
-    command: sh -c "cd apps/register && bunx prisma generate && bun run dev"
+    command: sh -c "bunx prisma generate && bun run dev"
     working_dir: /app/apps/register
     container_name: projeto-3-register
     volumes:
@@ -33,7 +33,7 @@ services:
 
   auth:
     image: oven/bun:latest
-    command: sh -c "cd apps/auth && bunx prisma generate && bun run dev"
+    command: sh -c "bunx prisma generate && bun run dev"
     working_dir: /app/apps/auth
     container_name: projeto-3-auth
     volumes:
@@ -45,6 +45,14 @@ services:
       register:
         condition: service_started
     environment:
+      DATABASE_URL: ${DATABASE_URL_AUTH}
+      DATABASE_URL_POOLED: ${DATABASE_URL_AUTH}
+      JWT_SECRET: ${JWT_SECRET}
+      REGISTER_SERVICE_URL: http://projeto-3-register:3000
+      PORT: 3001
+      CORS_ORIGIN: https://clinicasdigitais.cin.ufpe.br
+      NODE_ENV: development
+    ports:
       - "3011:3001"
     restart: on-failure
     networks:
@@ -53,7 +61,7 @@ services:
   historico:
     image: oven/bun:latest
     container_name: projeto-3-historico
-    command: sh -c "cd apps/historico && bunx prisma generate && bun run dev"
+    command: sh -c "bunx prisma generate && bun run dev"
     working_dir: /app/apps/historico
     volumes:
       - .:/app
