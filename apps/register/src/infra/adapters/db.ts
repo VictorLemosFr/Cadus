@@ -1,12 +1,13 @@
 import { PrismaClient } from "../database/generated/prisma/client.ts";
-import { PrismaNeon } from "@prisma/adapter-neon";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
 
 function getDatabaseUrl(): string {
   const url = process.env.NEON_DATABASE_URL;
 
   if (!url) {
     throw new Error(
-      "DATABASE_URL não definida. Verifique o arquivo .env do serviço register."
+      "NEON_DATABASE_URL não definida. Verifique o arquivo .env do serviço register."
     );
   }
 
@@ -14,7 +15,8 @@ function getDatabaseUrl(): string {
 }
 
 function createPrismaClient(): PrismaClient {
-  const adapter = new PrismaNeon({ connectionString: getDatabaseUrl() });
+  const pool = new pg.Pool({ connectionString: getDatabaseUrl() });
+  const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });
 }
 

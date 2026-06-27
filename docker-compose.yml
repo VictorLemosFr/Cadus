@@ -11,7 +11,7 @@ services:
 
   register:
     image: oven/bun:latest
-    command: sh -c "bunx prisma generate && bun run dev"
+    command: sh -c "bunx prisma migrate deploy && bunx prisma generate && bun run dev"
     working_dir: /app/apps/register
     container_name: projeto-3-register
     volumes:
@@ -33,7 +33,7 @@ services:
 
   auth:
     image: oven/bun:latest
-    command: sh -c "bunx prisma generate && bun run dev"
+    command: sh -c "bunx prisma migrate deploy && bunx prisma generate && bun run dev"
     working_dir: /app/apps/auth
     container_name: projeto-3-auth
     volumes:
@@ -61,7 +61,7 @@ services:
   historico:
     image: oven/bun:latest
     container_name: projeto-3-historico
-    command: sh -c "bunx prisma generate && bun run dev"
+    command: sh -c "bunx prisma migrate deploy && bunx prisma generate && bun run dev"
     working_dir: /app/apps/historico
     volumes:
       - .:/app
