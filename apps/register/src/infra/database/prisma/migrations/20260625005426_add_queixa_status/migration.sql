@@ -1,0 +1,6 @@
+-- CreateEnum
+CREATE TYPE "StatusPaciente" AS ENUM ('AGUARDANDO_MODERACAO', 'ENCAMINHADO', 'EM_ATENDIMENTO', 'CONCLUIDO');
+
+-- AlterTable
+ALTER TABLE "Identidade" ADD COLUMN     "queixa" VARCHAR(2000),
+ADD COLUMN     "status" "StatusPaciente" NOT NULL DEFAULT 'AGUARDANDO_MODERACAO';

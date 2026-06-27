@@ -1,0 +1,35 @@
+{
+  "references": [
+    { "path": "apps/frontend" },
+    { "path": "apps/register" },
+    { "path": "apps/auth" },
+    { "path": "apps/historico" }
+  ],
+  "files": [],
+  "compilerOptions": {
+    // Ambiente e features modernas
+    "lib": ["ESNext"],
+    "target": "ESNext",
+    "module": "Preserve",
+    "moduleDetection": "force",
+    "allowJs": true,
+
+    // Modo bundler
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+
+    // Boas práticas
+    "strict": true,
+    "skipLibCheck": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+
+    // Flags mais rígidas (desabilitadas por ora)
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noPropertyAccessFromIndexSignature": false
+  }
+}

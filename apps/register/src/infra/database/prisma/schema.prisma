@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Genero {
+  MASCULINO
+  FEMININO
+  OUTRO
+  NAO_INFORMADO
+}
+
+enum Pronome {
+  ELE_DELE
+  ELA_DELA
+  ELU_DELU
+  OUTRO
+}
+
+// Status do paciente na fila de moderação
+enum StatusPaciente {
+  AGUARDANDO_MODERACAO
+  ENCAMINHADO
+  EM_ATENDIMENTO
+  CONCLUIDO
+}
+
+model Identidade {
+  id String @id @default(uuid())
+  cpf String @db.VarChar(11) @unique
+  nome String @db.VarChar(150)
+  dataNascimento DateTime @db.Date
+
+  genero Genero
+  generoCustom String? @db.VarChar(150)
+  pronome Pronome?
+  pronomeCustom String? @db.VarChar(150)
+
+  telefone String @db.VarChar(20)
+  email String @db.VarChar(255) @unique
+  senha String @db.VarChar(255)
+
+  // Queixa principal do paciente — opcional para não quebrar cadastros antigos
+  queixa String? @db.VarChar(2000)
+
+  // Status na fila de moderação — default AGUARDANDO ao cadastrar
+  status StatusPaciente @default(AGUARDANDO_MODERACAO)
+
+  enderecoId String
+  endereco Endereco @relation(fields: [enderecoId], references: [id])
+
+  criadoEm    DateTime  @default(now()) @db.Timestamp(6)
+  atualizadoEm DateTime @updatedAt @db.Timestamp(6)
+  deletadoEm   DateTime? @db.Timestamp(6)
+}
+
+model Endereco {
+  id String @id @default(uuid())
+
+  cep         String    @db.VarChar(8) @unique
+  logradouro  String?   @db.VarChar(200)
+  numero      Int
+  complemento String?   @db.VarChar(100)
+
+  criadoEm    DateTime  @default(now()) @db.Timestamp(6)
+  atualizadoEm DateTime @updatedAt @db.Timestamp(6)
+  deletadoEm   DateTime? @db.Timestamp(6)
+
+  moradores Identidade[]
+}

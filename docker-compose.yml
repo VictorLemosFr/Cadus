@@ -1,0 +1,90 @@
+services:
+  register:
+    image: oven/bun:latest
+    command: sh -c "cd /app && (bun install || true) && cd apps/register && bunx prisma generate && bun run dev"
+    working_dir: /app/apps/register
+    volumes:
+      - .:/app
+      - register_modules:/app/node_modules
+    environment:
+      NEON_DATABASE_URL: ${NEON_DATABASE_URL_REGISTER}
+      PORT: 3000
+      CORS_ORIGIN: http://localhost
+      NODE_ENV: development
+    restart: on-failure
+    networks:
+      - cadus
+
+  auth:
+    image: oven/bun:latest
+    command: sh -c "cd /app && (bun install || true) && cd apps/auth && bunx prisma generate && bun run dev"
+    working_dir: /app/apps/auth
+    volumes:
+      - .:/app
+      - auth_modules:/app/node_modules
+    environment:
+      DATABASE_URL: ${DATABASE_URL_AUTH}
+      DATABASE_URL_POOLED: ${DATABASE_URL_AUTH}
+      JWT_SECRET: ${JWT_SECRET}
+      REGISTER_SERVICE_URL: http://register:3000
+      PORT: 3001
+      CORS_ORIGIN: http://localhost
+      NODE_ENV: development
+    depends_on:
+      - register
+    restart: on-failure
+    networks:
+      - cadus
+
+  historico:
+    image: oven/bun:latest
+    command: sh -c "cd /app && (bun install || true) && cd apps/historico && bunx prisma generate && bun run dev"
+    working_dir: /app/apps/historico
+    volumes:
+      - .:/app
+      - historico_modules:/app/node_modules
+    environment:
+      NEON_DATABASE_URL_DEV: ${NEON_DATABASE_URL_HISTORICO}
+      PORT: 3002
+      CORS_ORIGIN: http://localhost
+      NODE_ENV: development
+    restart: on-failure
+    networks:
+      - cadus
+
+  frontend:
+    image: oven/bun:latest
+    command: sh -c "cd /app && (bun install || true) && cd apps/frontend && bun run dev"
+    working_dir: /app/apps/frontend
+    volumes:
+      - .:/app
+      - frontend_modules:/app/node_modules
+    environment:
+      NODE_ENV: development
+    restart: on-failure
+    networks:
+      - cadus
+
+  nginx:
+    build: ./nginx
+    container_name: cadus-nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - auth
+      - register
+      - historico
+    networks:
+      - cadus
+    restart: always
+
+volumes:
+  register_modules:
+  auth_modules:
+  historico_modules:
+  frontend_modules:
+
+networks:
+  cadus:
+    driver: bridge

@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/infra/database/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Sessao {
+  id        String   @id @default(uuid())
+  cpf       String   @db.VarChar(11)
+  token     String   @unique @db.VarChar(512)
+  expiresAt DateTime
+  ativo     Boolean  @default(true)
+  criadoEm DateTime @default(now()) @db.Timestamp(6)
+}
+
+model TentativaLogin {
+  id           String    @id @default(uuid())
+  cpf          String    @unique @db.VarChar(11)
+  tentativas   Int       @default(0)
+  bloqueadoAte DateTime?
+  criadoEm    DateTime  @default(now()) @db.Timestamp(6)
+  atualizadoEm DateTime  @updatedAt
+}
+
+model TokenRecuperacao {
+  id        String   @id @default(uuid())
+  cpf       String   @db.VarChar(11)
+  token     String   @unique @db.VarChar(512)
+  usado     Boolean  @default(false)
+  expiresAt DateTime
+  criadoEm DateTime @default(now()) @db.Timestamp(6)
+}

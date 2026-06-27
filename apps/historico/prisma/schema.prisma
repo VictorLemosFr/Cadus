@@ -1,0 +1,19 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/infra/database/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Consulta {
+  id             String   @id @default(uuid())
+  pacienteId     String   @db.VarChar(36)
+  profissionalId String   @db.VarChar(36)
+  motivoConsulta String   @db.VarChar(500)
+  diagnostico    String?  @db.Text
+  instituicao    String   @db.VarChar(200)
+  dataConsulta   DateTime @db.Timestamp(6)
+  criadoEm      DateTime @default(now()) @db.Timestamp(6)
+}
